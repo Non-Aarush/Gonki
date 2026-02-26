@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gonki, The Roaster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="desktop-environment">
+        <header class="system-bar">
+            <div class="sys-left">
+                <span class="sys-logo">◧</span>
+                <span class="sys-breadcrumb">Gonki OS / Desktop / The Roaster</span>
+            </div>
+            <div class="sys-right">
+                <span id="sys-status">System Normal</span>
+                <span id="sys-time">00:00 AM</span>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <div class="desktop-icons">
+                <div class="icon-group" id="icon-system">
+                    <div class="icon">💾</div>
+                    <span class="icon-label">System</span>
+                </div>
+                <div class="icon-group" id="icon-network">
+                    <div class="icon">🌐</div>
+                    <span class="icon-label">Network</span>
+                </div>
+                <div class="icon-group" id="icon-recycle">
+                    <div class="icon">🗑️</div>
+                    <span class="icon-label">Recycle</span>
+                </div>
+            </div>
+
+            <div class="window main-window" id="app-window">
+                <div class="window-header" id="window-drag-handle">
+                    <div class="window-title">Roaster.exe</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-min"></div>
+                        <div class="win-btn win-max"></div>
+                        <div class="win-btn win-close"></div>
+                    </div>
+                </div>
+                <div class="window-content">
+
+                    <div id="view-input" class="view-section active">
+                        <div class="branding">
+                            <h1>GONKI</h1>
+                            <p class="subtitle">The web is fragile. Let's find the cracks.</p>
+                        </div>
+                        <div class="input-group">
+                            <label for="url-input">Target URL</label>
+                            <input type="url" id="url-input" placeholder="https://example.com" autocomplete="off"
+                                spellcheck="false">
+                            <button id="btn-roast" class="btn-primary">Roast My Website</button>
+                        </div>
+                    </div>
+
+                    <div id="view-analysis" class="view-section hidden">
+                        <h2>System Analysis</h2>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="scan-progress"></div>
+                        </div>
+                        <div class="terminal-container">
+                            <ul id="terminal-output" class="terminal-logs">
+                                <li>> Initializing Gonki scanner...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="view-result" class="view-section hidden">
+                        <div class="result-header">
+                            <h2>Analysis Complete</h2>
+                            <div class="score-panel">
+                                <span class="score-label">Integrity Score</span>
+                                <span class="score-value" id="final-score">--/100</span>
+                            </div>
+                        </div>
+                        <div class="roast-output">
+                            <div class="roast-content" id="roast-text"></div>
+                        </div>
+                        <button id="btn-reset" class="btn-secondary">Run Another Scan</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="window modal hidden" id="modal-system">
+                <div class="window-header modal-drag-handle">
+                    <div class="window-title">System Properties</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-close modal-close"></div>
+                    </div>
+                </div>
+                <div class="window-content modal-content">
+                    <p><strong>OS Version:</strong> Gonki v1.0.0</p>
+                    <p><strong>Memory:</strong> 640K (Ought to be enough for anybody)</p>
+                    <p><strong>Status:</strong> Passive Aggressive State Enabled</p>
+                    <p><strong>Theme:</strong> Retro Desktop Cool</p>
+                </div>
+            </div>
+
+            <div class="window modal hidden" id="modal-network">
+                <div class="window-header modal-drag-handle">
+                    <div class="window-title">Network Status</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-close modal-close"></div>
+                    </div>
+                </div>
+                <div class="window-content modal-content">
+                    <p class="network-ping">Pinging Gonki Servers...</p>
+                    <p class="network-reply hidden">> Reply from AI Core: "You're still here?"</p>
+                    <p class="network-reply hidden">> Status: Connected.</p>
+                </div>
+            </div>
+
+            <div class="window modal hidden" id="modal-recycle">
+                <div class="window-header modal-drag-handle">
+                    <div class="window-title">Recycle Bin</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-close modal-close"></div>
+                    </div>
+                </div>
+                <div class="window-content modal-content">
+                    <p>Stop trying to make this app happen.</p>
+                    <ul id="recycle-list"
+                        style="list-style-type: none; margin-top: 16px; color: var(--clr-text-muted);">
+                        <li>> terrible_landing_page_draft_final_v5.html</li>
+                        <li>> another_generic_saas_hero_image.png</li>
+                        <li>> fake_customer_testimonials.txt</li>
+                    </ul>
+                    <button class="btn-secondary" style="margin-top: 24px;" id="btn-empty-recycle">Incinerate
+                        Trash</button>
+                    <p id="recycle-empty-msg" class="hidden" style="margin-top: 16px;">The trash is gone. You still have
+                        to live with your design skills though.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
