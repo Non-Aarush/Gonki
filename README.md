@@ -58,7 +58,6 @@ The experience is designed to feel like running an old-school desktop utility �
 3. Simulated scan + logs appear
 4. Roast results are generated
 5. Integrity score is displayed
-**Update for reviewers: the black icon on the tab is a design elements its not a close button , to close it press on the icons on the side again , its a toggle , as for the window element they dont shift they are dragable D:**
 ---
 
 ## 🛠️ Tech Stack
