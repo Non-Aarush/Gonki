@@ -15,7 +15,7 @@ Gonki simulates a fake operating system called **Gonki OS**, where users run a t
 
 Users paste a website URL → Gonki performs a “system scan” → then generates:
 
-- 🔥 Roasts are aren't ai generated they are manually fed
+- 🔥 Roasts that are generated using website anaylsis 
 - 📊 Integrity Score (out of 100)
 - 🧠 Personality-driven feedback
 
@@ -31,7 +31,7 @@ The experience is designed to feel like running an old-school desktop utility �
 - Draggable window UI
 
 ### 🤖 Roast Engine
-- Generates sarcastic website feedback which are already in the database
+- Generates sarcastic website feedback
 - Frontend & UX themed humor
 - A fun Project
 
