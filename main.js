@@ -164,8 +164,20 @@
             eMsg.classList.remove('hidden');
             ics.bin.querySelector('.icon').textContent = '🗑️';
             ics.bin.style.opacity = '0.5';
+            txtLog('Recycle Bin incinerated. All drafts purged.');
         });
     }
+
+    tLst.addEventListener('click', (e) => {
+        const li = e.target.closest('li');
+        if (li) {
+            const name = li.textContent.replace(/^>\s*/, '');
+            li.style.textDecoration = 'line-through';
+            li.style.opacity = '0.5';
+            setTimeout(() => li.remove(), 400);
+            txtLog(`Restored "${name}" to Desktop.`);
+        }
+    });
 
     function swapV(v) {
         [vIn, vScan, vRes].forEach(x => {
@@ -271,29 +283,70 @@
         tLog.innerHTML = '';
         txtLog('Initializing Gonki scanner...');
 
-        const PRX = 'https://api.allorigins.win/get?url=';
+        const waitMsg = document.getElementById('network-wait-msg');
+        const waitTimer = setTimeout(() => {
+            if (waitMsg) {
+                const sars = [
+                    "> Still scanning... the bloat is real on this one. Please hold your breath.",
+                    "> Analyzing... even the CPU is getting bored. Just wait, okay?",
+                    "> Deep scan in progress. It's taking a while because there's so much junk to parse. Stay put.",
+                    "> The garbage collector is working overtime on this markup. Sit tight.",
+                    "> Wow, this is taking a while. Did you write this in Assembly? Just wait."
+                ];
+                waitMsg.textContent = sars[Math.floor(Math.random() * sars.length)];
+                waitMsg.classList.remove('hidden');
+                showMod('net');
+            }
+        }, 4500);
+
+        const PROXIES = [
+            'https://api.allorigins.win/get?url=',
+            'https://api.codetabs.com/v1/proxy?quest='
+        ];
+
         let html = null;
+        let success = false;
 
-        setP(10);
-        txtLog('Reaching out to target...');
+        for (let i = 0; i < PROXIES.length; i++) {
+            const PRX = PROXIES[i];
+            txtLog(`Attempting connection (Proxy ${i + 1}/${PROXIES.length})...`);
 
-        try {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), 12000);
+            try {
+                const ctrl = new AbortController();
+                const timeoutMs = i === 0 ? 12000 : 10000;
+                const t = setTimeout(() => ctrl.abort(), timeoutMs);
 
-            const res = await fetch(PRX + encodeURIComponent(u), { signal: ctrl.signal });
-            clearTimeout(t);
+                const res = await fetch(PRX + encodeURIComponent(u), { signal: ctrl.signal });
+                clearTimeout(t);
 
-            if (!res.ok) throw new Error('proxy error');
-            const d = await res.json();
-            html = d.contents;
+                if (!res.ok) throw new Error('proxy error');
+                const d = await res.json();
 
-            if (!html || html.length < 50) throw new Error('empty');
-            txtLog('Target acquired. Parsing markup...');
-        } catch (err) {
+                
+                
+                html = d.contents || d.content || (typeof d === 'string' ? d : null);
+
+                if (html && html.length > 20) {
+                    success = true;
+                    txtLog('Target acquired. Parsing markup...');
+                    await delay(600);
+                    break;
+                }
+            } catch (err) {
+                console.warn(`Proxy ${i + 1} failed:`, err);
+                if (i < PROXIES.length - 1) {
+                    txtLog('Primary route unstable. Trying secondary path...');
+                    await delay(800);
+                }
+            }
+        }
+
+        if (!success) {
+            clearTimeout(waitTimer);
+            if (waitMsg) waitMsg.classList.add('hidden');
             setP(100);
-            txtLog('Connection failed.');
-            await delay(800);
+            txtLog('Connection failed. Target remains elusive.');
+            await delay(1000);
             showRes(failRoast(u), 12);
             return;
         }
@@ -303,15 +356,17 @@
         const p = new DOMParser();
         const doc = p.parseFromString(html, 'text/html');
 
-        const finds = runFix(doc, u, txtLog, setP);
+        const finds = await runFix(doc, u, txtLog, setP);
 
         setP(95);
         txtLog('Compiling insults...');
-        await delay(600);
+        await delay(800);
         setP(100);
-        await delay(300);
+        await delay(400);
 
         const { s, r } = makeRoast(finds, u);
+        clearTimeout(waitTimer);
+        if (waitMsg) waitMsg.classList.add('hidden');
         showRes(r, s);
     }
 
@@ -319,17 +374,20 @@
         return new Promise(r => setTimeout(r, ms));
     }
 
-    function runFix(doc, url, log, set) {
+    async function runFix(doc, url, log, set) {
         const f = {};
 
-        log('Checking security...');
+        log('Checking security protocols...');
+        await delay(500);
         f.noS = !url.startsWith('https://');
         set(32);
 
-        log('Checking viewport...');
+        log('Auditing mobile responsiveness...');
+        await delay(600);
         f.noV = !doc.querySelector('meta[name="viewport"]');
 
-        log('Inspecting title...');
+        log('Inspecting metadata and titles...');
+        await delay(500);
         const t = doc.querySelector('title');
         const tt = t ? t.textContent.trim() : '';
         f.noT = !tt;
@@ -337,18 +395,21 @@
         f.tt = tt;
         set(45);
 
-        log('Checking meta description...');
+        log('Measuring SEO depth...');
+        await delay(400);
         const d = doc.querySelector('meta[name="description"]');
         f.noD = !d || !d.getAttribute('content') || d.getAttribute('content').trim().length < 10;
 
-        log('Auditing images...');
+        log('Scanning asset accessibility...');
+        await delay(700);
         const imgs = doc.querySelectorAll('img');
         const noAlt = [...imgs].filter(i => !i.getAttribute('alt') && i.getAttribute('alt') !== '');
         f.alt = noAlt.length;
         f.tImg = imgs.length;
         set(58);
 
-        log('Measuring structure...');
+        log('Analyzing DOM structure complexity...');
+        await delay(600);
         const ds = doc.querySelectorAll('div').length;
         const sem = doc.querySelectorAll('header, main, nav, section, article, footer, aside').length;
         f.divs = ds;
@@ -357,42 +418,43 @@
         f.divHvy = ds > 20 && ds / (sem + 1) > 8;
         set(68);
 
-        log('Checking inline styles...');
+        log('Detecting inline style pollution...');
+        await delay(500);
         const ist = doc.querySelectorAll('[style]').length;
         f.ist = ist;
         f.istAbu = ist > 10;
 
-        log('Auditing scripts...');
+        log('Evaluating script payload...');
+        await delay(600);
         const scs = doc.querySelectorAll('script[src]').length;
         f.scs = scs;
         f.scHvy = scs > 8;
         set(78);
 
-        log('Checking headings...');
+        log('Parsing heading hierarchy...');
+        await delay(400);
         const hs = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
         const emH = [...hs].filter(h => !h.textContent.trim());
         f.emH = emH.length;
 
-        log('Checking H1s...');
+        log('Checking H1 status...');
+        await delay(300);
         const h1s = doc.querySelectorAll('h1').length;
         f.mH1 = h1s > 1;
         f.h1c = h1s;
         f.nH1 = h1s === 0;
         set(86);
 
-        log('Checking favicon...');
+        log('Checking visual branding...');
+        await delay(400);
         f.noFav = !doc.querySelector('link[rel*="icon"]');
 
-        log('Checking body styles...');
-        f.bSty = doc.querySelectorAll('body link[rel="stylesheet"]').length;
-
-        log('Checking tables...');
+        log('Finalizing analysis report...');
+        await delay(500);
         const ts = doc.querySelectorAll('table').length;
         const gts = doc.querySelectorAll('table[role="grid"]').length;
         f.tbl = ts > 0 && (ts - gts) > 0;
         set(93);
-
-        log('Finalizing...');
 
         return f;
     }
@@ -418,69 +480,96 @@
 
         const pool = {
             http: [
-                "Serving over HTTP in 2024 is like leaving your front door wide open and then being surprised when people walk in.",
-                "Your security protocol is effectively 'thoughts and prayers'.",
-                "HTTPS isn't a premium feature, it's a basic survival requirement."
+                "Your choice to use insecure HTTP in this day and age is a bold statement against personal safety.",
+                "Your security protocol seems to rely entirely on hope and the kindness of strangers.",
+                "Leaving the certificate at home? Your users will definitely appreciate the lack of basic encryption."
             ],
             mobile: [
-                "Your site looks like it was designed exclusively for desktop monitors from 2005. Mobile users will love the horizontal scrolling marathon.",
-                "No viewport tag? Are you trying to save bytes or just genuinely hate phones?",
-                "Responsive design called. It said it misses you."
+                "This site treats mobile devices like they don't exist. It's a very pure approach to 2005-era web design.",
+                "I hope your target audience only uses ultra-wide monitors, because this layout ignores responsive design entirely.",
+                "The lack of mobile optimization suggests you prefer users to experience your site through a microscope."
             ],
             title: [
-                `"${f.tt || 'Untitled'}" — truly a masterclass in generic page naming. I'm sure SEO will love this absolute void of information.`,
-                "Your page title has about as much personality as a damp sponge.",
-                "A title is meant to summarize the page, not describe the developer's enthusiasm."
+                `"${f.tt || 'Untitled'}" — a page title so generic it actually disappears into the background if you look at it too long.`,
+                "Your page title has all the personality of a placeholder that someone forgot to replace.",
+                "I've seen more informative error codes than the title you chose for this page."
             ],
             meta: [
-                "No meta description? I guess search engines should just use their imagination. It's probably better than the reality anyway.",
-                "Your SEO strategy seems to be 'hide and seek', and you're winning.",
-                "A meta description is like a first date. Yours is just silence."
+                "No meta description? I guess search engines should just guess what this page is about. They'll probably be more generous than I am.",
+                "Your SEO strategy is essentially 'playing hard to get' with the entire internet.",
+                "I love the mystery you've created by providing zero descriptive metadata for search crawlers."
             ],
             alt: [
-                `${f.alt} images without alt text. Screen readers probably think this page is an abstract art gallery of 'image.jpg'.`,
-                "Accessibility called. It's disappointed, but not surprised.",
-                "Choosing not to use alt tags is a bold statement against the concept of an inclusive web."
+                "Leaving images without descriptions is a great way to ensure screen readers treat your site like a silent film.",
+                "Your commitment to ignoring image accessibility is truly impressive in its thoroughness.",
+                "Providing no context for your visuals really helps in maintaining that 'half-finished' aesthetic."
             ],
             divs: [
-                `${f.divs} divs and basically zero semantic tags. It's like you discovered building blocks but refused to use anything but the generic squares.`,
-                "This DOM structure is a literal nightmare for anyone attempting to read it. It's just divs all the way down.",
-                "HTML5 introduced semantic tags for a reason. You ignored all of them."
+                "This layout is suffering from severe div-overload. It's like you discovered a single tag and decided it was enough for the entire internet.",
+                "The DOM structure here is so unnecessarily nested it feels like a digital maze with no exit.",
+                "You've managed to build a site using exclusively generic boxes. It's a masterclass in avoiding semantic meaning."
             ],
             styles: [
-                `${f.ist} inline styles? CSS files are free, but clearly you prefer the chaos of ad-hoc formatting crimes.`,
-                "Inline styles are the architectural equivalent of using duct tape for the entire foundation.",
-                "Your stylesheet must be very lonely given how much work you're doing directly in the HTML."
+                "Inline styles everywhere? It's like you're trying to prove that separate CSS files are an unnecessary luxury.",
+                "Your stylesheet must be very lonely given how much formatting you've decided to hardcode directly into the HTML.",
+                "It's practical, I guess — if your goal is to make every single change as difficult as possible."
             ],
             js: [
-                `${f.scs} external scripts. Your users' browsers are working overtime to process whatever bloat you've decided is essential.`,
-                "This isn't a website, it's a delivery mechanism for a browser crash.",
-                "You're loading more JS than a modern banking app for what appears to be a basic landing page."
+                "The sheer weight of external scripts is enough to make any browser consider early retirement.",
+                "You're loading so much JavaScript that the page logic is probably still trying to figure out its own purpose.",
+                "It's a bold choice to rely so heavily on external bloat for what appears to be a basic landing page."
             ],
             h1: [
-                f.mH1 ? "Multiple H1 tags. Because why have one clear heading when you can have three competing for attention?" : "No H1 tag. The page has no idea what its own name is. Relatable.",
-                "Heading hierarchy is a suggestion you chose to ignore.",
-                "Your H1 status is a mess. It's okay, we've all been there."
+                f.mH1 ? "Multiple H1 tags are a great way to ensure the page doesn't have a single clear priority." : "A page without an H1 is like a book without a title — slightly confusing and probably not worth reading.",
+                "Your heading hierarchy is more of a vague suggestion than a structure.",
+                "It's refreshing to see someone so completely disregard the basic rules of document organization."
             ],
             tables: [
-                "Using tables for layout? Welcome back to 1998. How's the dial-up connection treating you?",
-                "Layout tables are a vintage aesthetic I didn't think anyone still used unironically.",
-                "Tables are for data. Grids and Flexbox are for layout. It's been a while, but we should probably catch up."
+                "Using tables for layout is a wonderful tribute to the web of the late 90s.",
+                "I didn't realize building layouts with data grids was still a thing. It's vintage, in a bad way.",
+                "The 1990s called. They're actually okay with you keeping this layout style."
             ],
             empty: [
-                "Empty heading tags. You've created the structure but forgot the soul. Deep.",
-                "Nothing says 'I gave up halfway through' like a bunch of blank h3 tags.",
-                "Structural decorations are cool, I guess."
+                "The empty heading tags really add to the overall sense of a project that was abandoned halfway through.",
+                "Stretches of hollow structure with zero content. It's very poetic, but technically terrible.",
+                "You've built the frames but forgot to put the art in. It's a very minimalist approach."
             ],
             favicon: [
-                "No favicon. That sad little blank square in the tab perfectly captures the overall vibe.",
-                "A favicon is the bowtie of a website. You forgot yours.",
-                "Iconless tabs are the hallmark of a project that was finished at 3 AM."
+                "No favicon. That sad little empty square in the tab is a perfect summary of the effort level here.",
+                "You forgot the bowtie of the website. It looks incomplete and slightly embarrassed.",
+                "The default browser icon really ties together the 'I just started this' vibe."
             ]
         };
 
-        const chosenArr = pts.length > 0 ? pool[pts[Math.floor(Math.random() * pts.length)]] : ["This site is suspiciously fine. I'm choosing to be offended by its lack of obvious flaws."];
-        const r = chosenArr[Math.floor(Math.random() * chosenArr.length)];
+        const validPts = pts.filter(p => pool[p]);
+
+        if (validPts.length === 0) {
+            return { s, r: "This site is suspiciously fine. I'm choosing to be offended by its lack of obvious flaws." };
+        }
+
+    
+        let siteName = f.tt || url.replace(/^https?:\/\//, '').split('/')[0];
+        if (siteName.length > 30) siteName = siteName.substring(0, 27) + '...';
+
+        const openings = [
+            `So, "${siteName}"... for a site that clearly wants to be taken seriously, the execution here is remarkably questionable.`,
+            `Looking at "${siteName}"... it has the confident energy of a production site, but the structural integrity of a weekend hackathon project.`,
+            `Ah, "${siteName}". I expected a masterclass in professional polish, but what I'm seeing suggests a very different set of priorities.`,
+            `"${siteName}" - a bold name for a website that seems so fundamentally at odds with modern web standards.`,
+            `"${siteName}" - It's clear someone spent a lot of time on the concept, just maybe not enough on the actual foundation.`
+        ];
+
+        const opening = openings[Math.floor(Math.random() * openings.length)];
+
+        const shuffled = validPts.sort(() => 0.5 - Math.random());
+        const issuesToUse = shuffled.slice(0, 2);
+
+        let roastParts = issuesToUse.map(issue => {
+            const arr = pool[issue];
+            return arr[Math.floor(Math.random() * arr.length)];
+        });
+
+        const r = opening + " " + roastParts.join(" Also, ");
 
         return { s, r };
     }
@@ -492,6 +581,12 @@
     function showRes(r, s) {
         scr.textContent = s + '/100';
         scr.className = 'score-value score-bad';
+
+        const h2 = vRes.querySelector('h2');
+        if (h2) {
+            h2.textContent = "Analysis Complete";
+        }
+
         swapV(vRes);
         type(r);
     }

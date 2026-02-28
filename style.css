@@ -196,11 +196,27 @@ h6 {
     border: var(--bW) solid var(--brd);
     border-radius: 50%;
     background-color: var(--win);
+    position: relative;
+    transition: transform 0.1s ease;
+}
+
+.win-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
 }
 
 .win-btn.win-close {
     background-color: var(--txt);
     cursor: pointer;
+}
+
+.win-btn.win-close:hover {
+    transform: scale(1.1);
 }
 
 .window-content {
@@ -479,8 +495,8 @@ button.btn-secondary:hover {
     transition: none;
 }
 
-.modal.hidden {
-    display: none;
+.hidden {
+    display: none !important;
 }
 
 .modal-content {
@@ -496,6 +512,17 @@ button.btn-secondary:hover {
 .network-ping {
     font-family: var(--fH);
     color: var(--mut);
+}
+
+#recycle-list li {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 2px 4px;
+}
+
+#recycle-list li:hover {
+    background-color: var(--hi);
+    color: var(--txt);
 }
 
 .network-reply {
