@@ -361,7 +361,6 @@
             const isSelf = f.self;
             seal.className = isSelf ? 'audit-seal certified' : 'audit-seal';
             seal.textContent = isSelf ? 'CERTIFIED' : 'REJECTED';
-            // No animation if it was already sealed
             seal.style.animation = 'none';
             audCont.appendChild(seal);
             sealBtn.style.opacity = '0.5';
@@ -451,8 +450,6 @@
                 clearTimeout(t);
 
                 if (!res.ok) throw new Error(`${p.n} error`);
-
-                // Allorigins uses JSON wrapper, others might be direct
                 if (p.n === 'AllOrigins') {
                     const d = await res.json();
                     html = d.contents;
