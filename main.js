@@ -299,43 +299,47 @@
             }
         }, 4500);
 
-        const PROXIES = [
-            'https://api.allorigins.win/get?url=',
-            'https://api.codetabs.com/v1/proxy?quest='
+        const pxy = [
+            { n: 'AllOrigins', u: 'https://api.allorigins.win/get?url=' },
+            { n: 'Codetabs', u: 'https://api.codetabs.com/v1/proxy?quest=' },
+            { n: 'CorsProxy', u: 'https://corsproxy.io/?' }
         ];
 
         let html = null;
         let success = false;
 
-        for (let i = 0; i < PROXIES.length; i++) {
-            const PRX = PROXIES[i];
-            txtLog(`Attempting connection (Proxy ${i + 1}/${PROXIES.length})...`);
+        for (let i = 0; i < pxy.length; i++) {
+            const p = pxy[i];
+            txtLog(`Attempting connection via ${p.n}...`);
 
             try {
                 const ctrl = new AbortController();
-                const timeoutMs = i === 0 ? 12000 : 10000;
+                const timeoutMs = i === 0 ? 15000 : 12000;
                 const t = setTimeout(() => ctrl.abort(), timeoutMs);
 
-                const res = await fetch(PRX + encodeURIComponent(u), { signal: ctrl.signal });
+                const res = await fetch(p.u + encodeURIComponent(u), { signal: ctrl.signal });
                 clearTimeout(t);
 
-                if (!res.ok) throw new Error('proxy error');
-                const d = await res.json();
+                if (!res.ok) throw new Error(`${p.n} error`);
 
-                
-                
-                html = d.contents || d.content || (typeof d === 'string' ? d : null);
+                // Allorigins uses JSON wrapper, others might be direct
+                if (p.n === 'AllOrigins') {
+                    const d = await res.json();
+                    html = d.contents;
+                } else {
+                    html = await res.text();
+                }
 
-                if (html && html.length > 20) {
+                if (html && html.length > 50) {
                     success = true;
-                    txtLog('Target acquired. Parsing markup...');
+                    txtLog(`Target acquired through ${p.n}. Parsing markup...`);
                     await delay(600);
                     break;
                 }
             } catch (err) {
-                console.warn(`Proxy ${i + 1} failed:`, err);
-                if (i < PROXIES.length - 1) {
-                    txtLog('Primary route unstable. Trying secondary path...');
+                console.warn(`${p.n} attempt failed:`, err);
+                if (i < pxy.length - 1) {
+                    txtLog(`Route unstable. Switching to ${pxy[i + 1].n}...`);
                     await delay(800);
                 }
             }
@@ -547,7 +551,7 @@
             return { s, r: "This site is suspiciously fine. I'm choosing to be offended by its lack of obvious flaws." };
         }
 
-    
+
         let siteName = f.tt || url.replace(/^https?:\/\//, '').split('/')[0];
         if (siteName.length > 30) siteName = siteName.substring(0, 27) + '...';
 
