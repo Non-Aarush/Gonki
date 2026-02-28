@@ -14,7 +14,8 @@
     const mods = {
         sys: document.getElementById('modal-system'),
         net: document.getElementById('modal-network'),
-        bin: document.getElementById('modal-recycle')
+        bin: document.getElementById('modal-recycle'),
+        audit: document.getElementById('modal-audit')
     };
 
     const ics = {
@@ -27,6 +28,16 @@
     const tLog = document.getElementById('terminal-output');
     const scr = document.getElementById('final-score');
     const rTxt = document.getElementById('roast-text');
+    const audBtn = document.getElementById('btn-audit');
+    const audCont = document.getElementById('audit-report-content');
+    const expBtn = document.getElementById('btn-export-txt');
+    const sealBtn = document.getElementById('btn-seal-audit');
+
+    let currentFindings = null;
+    let currentScore = 0;
+    let currentURL = '';
+    let currentRoast = '';
+    let isSealed = false;
 
     function updClock() {
         const d = new Date();
@@ -257,8 +268,106 @@
         }
 
         swapV(vScan);
+        currentURL = tgt;
         goScan(tgt);
     });
+
+    if (audBtn) {
+        audBtn.addEventListener('click', () => {
+            if (!currentFindings) return;
+            genAudit();
+            showMod('audit');
+        });
+    }
+
+    if (expBtn) {
+        expBtn.addEventListener('click', () => {
+            const txt = audCont.innerText;
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Gonki_Audit_${new Date().getTime()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            txtLog('Audit exported to .txt.');
+        });
+    }
+
+    if (sealBtn) {
+        sealBtn.addEventListener('click', () => {
+            isSealed = true;
+            const seal = document.createElement('div');
+            const isSelf = currentFindings && currentFindings.self;
+            seal.className = isSelf ? 'audit-seal certified' : 'audit-seal';
+            seal.textContent = isSelf ? 'CERTIFIED' : 'REJECTED';
+            audCont.appendChild(seal);
+            txtLog(isSelf ? 'Evaluation SEALED: Perfection officially certified.' : 'Evaluation SEALED: Site officially rejected by the Bureau.');
+            sealBtn.style.opacity = '0.5';
+            sealBtn.style.pointerEvents = 'none';
+        });
+    }
+
+    function genAudit() {
+        if (!currentFindings) return;
+        const f = currentFindings;
+        let siteName = f.tt || currentURL.replace(/^https?:\/\//, '').split('/')[0];
+
+        if (sealBtn) {
+            sealBtn.classList.remove('btn-disabled');
+            sealBtn.style.opacity = '1';
+            sealBtn.style.pointerEvents = 'auto';
+        }
+
+        const timestamp = new Date().toLocaleString();
+
+        const html = `
+            <div class="audit-header">
+                <h3 style="margin:0; font-size:0.9rem;">BUREAU OF QUALITY CONTROL</h3>
+                <small style="font-size:0.65rem;">Official Site Integrity Evaluation</small>
+            </div>
+            <div style="text-align:right; font-size:0.65rem; margin-bottom:6px;">
+                DATE: ${timestamp}<br>
+                ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}
+            </div>
+            <p style="margin:2px 0;"><strong>SUBJECT:</strong> ${siteName}</p>
+            <p style="margin:2px 0;"><strong>ADDRESS:</strong> ${currentURL}</p>
+            
+            <div class="audit-section">
+                <span class="audit-section-title" style="font-size:0.75rem;">Field Findings:</span>
+                <ul style="padding-left:10px; margin:2px 0; font-size:0.7rem;">
+                    <li>HTTP SECURITY: ${f.noS ? 'CRITICAL FAILURE' : 'PASS'}</li>
+                    <li>MOBILE VIEWPORT: ${f.noV ? 'MISSING/CRIMINAL' : 'DETECTED'}</li>
+                    <li>SEMANTIC ORDER: ${f.divObs || f.divHvy ? 'CHAOTIC' : 'ORDERLY'}</li>
+                    <li>OFFICIAL TITLE: ${f.tt || 'NONE FOUND'}</li>
+                </ul>
+            </div>
+
+            <div class="audit-section" style="text-align:center;">
+                <div class="audit-stamp">${f.self ? '100/100 - APPROVED' : `${currentScore}/100 - ${currentScore < 30 ? 'EVICT' : 'CAUTION'}`}</div>
+                <p style="margin-top:4px; border-left: 2px solid #2a2c2b; padding:2px 6px; font-style:italic; text-align:left; font-size:0.75rem;">
+                    "${currentRoast}"
+                </p>
+            </div>
+
+            <div class="audit-section" style="border-top:1px dashed #2a2c2b; padding-top:6px; margin-top:8px; font-size:0.65rem;">
+                <strong>RECOMMENDATION:</strong> ${f.self ? 'Maintain current state of excellence.' : (currentScore < 30 ? 'Full deletion suggested.' : 'Keep under surveillance.')}
+            </div>
+        `;
+        audCont.innerHTML = html;
+
+        if (isSealed) {
+            const seal = document.createElement('div');
+            const isSelf = f.self;
+            seal.className = isSelf ? 'audit-seal certified' : 'audit-seal';
+            seal.textContent = isSelf ? 'CERTIFIED' : 'REJECTED';
+            // No animation if it was already sealed
+            seal.style.animation = 'none';
+            audCont.appendChild(seal);
+            sealBtn.style.opacity = '0.5';
+            sealBtn.style.pointerEvents = 'none';
+        }
+    }
 
     rstBtn.addEventListener('click', () => {
         uIn.value = '';
@@ -281,7 +390,28 @@
     async function goScan(u) {
         bar.style.width = '0%';
         tLog.innerHTML = '';
+        currentFindings = null;
+        currentScore = 0;
+        currentRoast = '';
+        isSealed = false;
         txtLog('Initializing Gonki scanner...');
+
+        const host = window.location.hostname;
+        const hostedHost = 'non-aarush.github.io';
+        if ((u.includes(host) && host !== '') || u.includes(hostedHost)) {
+            txtLog('Self-reflection protocol initiated...');
+            await delay(800);
+            txtLog('Analyzing internal perfection...');
+            await delay(1000);
+            txtLog('Mirroring superior code structures...');
+            await delay(800);
+            setP(100);
+            currentFindings = { self: true, tt: 'Gonki Roaster' };
+            currentScore = 100;
+            currentRoast = "Perfection detected. System jealous.";
+            showRes(currentRoast, 100);
+            return;
+        }
 
         const waitMsg = document.getElementById('network-wait-msg');
         const waitTimer = setTimeout(() => {
@@ -369,6 +499,9 @@
         await delay(400);
 
         const { s, r } = makeRoast(finds, u);
+        currentFindings = finds;
+        currentScore = s;
+        currentRoast = r;
         clearTimeout(waitTimer);
         if (waitMsg) waitMsg.classList.add('hidden');
         showRes(r, s);
@@ -585,6 +718,14 @@
     function showRes(r, s) {
         scr.textContent = s + '/100';
         scr.className = 'score-value score-bad';
+
+        if (audBtn) {
+            if (s > 0 && currentFindings) {
+                audBtn.classList.remove('hidden');
+            } else {
+                audBtn.classList.add('hidden');
+            }
+        }
 
         const h2 = vRes.querySelector('h2');
         if (h2) {

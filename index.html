@@ -80,8 +80,11 @@
                         <div class="result-header">
                             <h2>Analysis Complete</h2>
                             <div class="score-panel">
-                                <span class="score-label">Integrity Score</span>
-                                <span class="score-value" id="final-score">--/100</span>
+                                <span class="score-label">Final Evaluation</span>
+                                <span id="final-score" class="score-value">0/100</span>
+                                <button class="btn-secondary hidden" id="btn-audit"
+                                    style="margin-top: 12px; font-size: 0.8rem; padding: 6px 12px;">📋 Generate
+                                    Audit</button>
                             </div>
                         </div>
                         <div class="roast-output">
@@ -142,6 +145,25 @@
                         Trash</button>
                     <p id="recycle-empty-msg" class="hidden" style="margin-top: 16px;">The trash is gone. You still have
                         to live with your design skills though.</p>
+                </div>
+            </div>
+            <div class="window modal hidden" id="modal-audit">
+                <div class="window-header modal-drag-handle">
+                    <div class="window-title">Bureau of Quality Control - Audit Report</div>
+                    <div class="window-controls">
+                        <div class="win-btn win-close modal-close"></div>
+                    </div>
+                </div>
+                <div class="window-content modal-content audit-paper">
+                    <div id="audit-report-content">
+                        <!-- Content populated via main.js -->
+                    </div>
+                    <div class="audit-actions" style="margin-top: 16px; display: flex; gap: 8px;">
+                        <button class="btn-secondary" id="btn-export-txt" style="flex: 1; font-size: 0.8rem;">💾 Export
+                            .txt</button>
+                        <button class="btn-secondary" id="btn-seal-audit" style="flex: 1; font-size: 0.8rem;">🔏 Seal
+                            Evaluation</button>
+                    </div>
                 </div>
             </div>
         </main>
