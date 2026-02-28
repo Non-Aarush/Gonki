@@ -38,6 +38,7 @@ The experience is designed to feel like running an old-school desktop utility �
 ### 📊 Integrity Score
 - Final score rating for the scanned website
 - Presented like a system diagnostic
+- Generates a Audit which can be stamped and exported as a .txt file
 
 ### 💻 Terminal-style Analysis
 - Scanner logs
