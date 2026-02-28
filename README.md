@@ -11,7 +11,7 @@ Built inside a retro desktop-inspired interface, Gonki blends humor with analysi
 
 ## ✨ Overview
 
-Gonki simulates a fake operating system called **Gonki OS**, where users run a tool called **Roaster.exe**.
+Gonki simulates a Web operating system called **Gonki OS**, where users run a tool called **Roaster.exe**.
 
 Users paste a website URL → Gonki performs a “system scan” → then generates:
 
