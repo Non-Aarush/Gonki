@@ -282,15 +282,31 @@
 
     if (expBtn) {
         expBtn.addEventListener('click', () => {
-            const txt = audCont.innerText;
-            const blob = new Blob([txt], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Gonki_Audit_${new Date().getTime()}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            txtLog('Audit exported to .txt.');
+            const ppr = audCont.closest('.audit-paper');
+            if (!ppr) return;
+            const acts = ppr.querySelector('.audit-actions');
+            expBtn.style.opacity = '0.5';
+            expBtn.style.pointerEvents = 'none';
+            expBtn.textContent = '⏳ Capturing...';
+            if (acts) acts.style.display = 'none';
+            html2canvas(ppr, {
+                backgroundColor: '#fdfaf0',
+                scale: 2,
+                useCORS: true
+            }).then(cvs => {
+                const a = document.createElement('a');
+                a.href = cvs.toDataURL('image/png');
+                a.download = `Gonki_Audit_${new Date().getTime()}.png`;
+                a.click();
+                txtLog('Audit exported as image.');
+            }).catch(() => {
+                txtLog('Image export failed.');
+            }).finally(() => {
+                if (acts) acts.style.display = 'flex';
+                expBtn.textContent = '📸 Export Image';
+                expBtn.style.opacity = '1';
+                expBtn.style.pointerEvents = 'auto';
+            });
         });
     }
 
