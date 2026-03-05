@@ -6,6 +6,9 @@
 Gonki is a playful website roaster that scans a target URL and delivers sarcastic, witty, and brutally honest feedback about design, UX, and frontend decisions.
 
 Built inside a retro desktop-inspired interface, Gonki blends humor with analysis to turn website critique into entertainment.
+![Input screen](screenshot1.png)
+![Results screen](screenshot2.png)
+![Audit report and network modal](screenshot3.png)
 
 
 
