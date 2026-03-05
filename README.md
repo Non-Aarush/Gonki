@@ -56,6 +56,7 @@ The experience is designed to feel like running an old-school desktop utility â€
 - Recycle Bin roast messages
 - Passive-aggressive system status
 - Fake system properties
+- Many Themes to choose from
 
 ---
 
