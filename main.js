@@ -1,4 +1,19 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('gonki-theme') || 'blue';
+    document.documentElement.dataset.theme = saved;
+    const dots = document.querySelectorAll('.theme-dot');
+    dots.forEach(d => {
+        if (d.dataset.theme === saved) d.classList.add('active');
+        else d.classList.remove('active');
+        d.addEventListener('click', () => {
+            const t = d.dataset.theme;
+            document.documentElement.dataset.theme = t;
+            localStorage.setItem('gonki-theme', t);
+            dots.forEach(x => x.classList.remove('active'));
+            d.classList.add('active');
+        });
+    });
+
     const clk = document.getElementById('sys-time');
     const hdl = document.getElementById('window-drag-handle');
     const app = document.getElementById('app-window');
